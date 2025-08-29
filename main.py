@@ -13,15 +13,30 @@ load_dotenv()
 
 app = FastAPI()
 
-website_url = os.getenv("WEBSITE_URL", "http://localhost:3000")
+# website_url = os.getenv("WEBSITE_URL", "http://localhost:3000")
+
+# app.add_middleware(
+#     CORSMiddleware,
+#     allow_origins=[website_url],
+#     allow_credentials=True,
+#     allow_methods=["*"],
+#     allow_headers=["*"],
+# )
+from fastapi.middleware.cors import CORSMiddleware
+
+origins = [
+    "http://localhost:3000",  
+    "https://revision-tool-mu.vercel.app/"  
+]
 
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=[website_url],
+    allow_origins=origins,
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
 )
+
 
 api_key = os.getenv("GEMINI_API_KEY")
 if not api_key:
