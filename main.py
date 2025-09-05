@@ -13,29 +13,17 @@ load_dotenv()
 
 app = FastAPI()
 
-# website_url = os.getenv("WEBSITE_URL", "http://localhost:3000")
-
-# app.add_middleware(
-#     CORSMiddleware,
-#     allow_origins=[website_url],
-#     allow_credentials=True,
-#     allow_methods=["*"],
-#     allow_headers=["*"],
-# )
-from fastapi.middleware.cors import CORSMiddleware
-
-origins = [
-    "http://localhost:3000",  
-    "https://revision-tool-mu.vercel.app/"  
-]
+website_url = os.getenv("WEBSITE_URL", "http://localhost:3000")
 
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=origins,
+    allow_origins=[website_url],
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
 )
+
+
 
 
 api_key = os.getenv("GEMINI_API_KEY")
@@ -143,12 +131,12 @@ Document (page par page) :
 
     return result
 
-@app.post("/generate-quiz/")
-async def generate_quiz(file: UploadFile):
-    """Génère un quiz à partir du document uploadé"""
+
+@app.post("/generatequiz/")
+async def generatequiz(file: UploadFile):
+    """Génère un quiz à partir du document uploadé avec 3 options par question"""
     filename = file.filename.lower()
 
-    # Extraction texte selon le type de fichier
     if filename.endswith(".pdf"):
         pages_content = extract_text_from_pdf(file.file)
     elif filename.endswith(".docx") or filename.endswith(".doc"):
@@ -163,12 +151,27 @@ async def generate_quiz(file: UploadFile):
     )
 
     prompt = f"""
-Tu es un assistant pédagogique expert. 
+Tu es un assistant pédagogique expert.
 Génère un quiz à partir du document fourni (page par page). 
-Répond uniquement en JSON avec une liste de questions détaillées et leur réponse si possible :
-
+Pour chaque question, donne exactement 3 réponses : 1 correcte et 2 incorrectes.
+Pour chaque réponse, écris une explication claire et précise :
+- si la réponse est correcte, explique exactement pourquoi elle l'est en te basant sur le document,
+- si la réponse est incorrecte, explique exactement pourquoi elle est fausse, et ce que l'on doit retenir.
+Ne te contente pas de dire "voir page X", sois spécifique.
+Répond uniquement en JSON comme ceci :
+{{
+  "questions": [
+    {{
+      "question": "Texte de la question",
+      "reponses": [
+        {{"texte": "Réponse 1", "correct": true/false, "explication": "Explication claire"}}
+      ]
+    }}
+  ]
+}}
 {document_str}
 """
+
 
     response = model.generate_content(prompt)
 
