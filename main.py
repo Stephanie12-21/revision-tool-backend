@@ -13,7 +13,7 @@ load_dotenv()
 
 app = FastAPI()
 
-website_url = os.getenv("WEBSITE_URL", "http://localhost:3000")
+website_url = os.getenv("https://revision-tool-mu.vercel.app/", "http://localhost:3000")
 
 app.add_middleware(
     CORSMiddleware,
